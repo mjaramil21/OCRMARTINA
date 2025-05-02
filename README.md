@@ -1,1 +1,1 @@
-# OCRMARTINA
+# Reconocimiento Óptico de Caracteres
