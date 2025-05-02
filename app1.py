@@ -18,25 +18,14 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Título en rojo
-st.markdown("<h1 style='color: red;'>FNSM OCR</h1>", unsafe_allow_html=True)
+st.title("Reconocimiento óptico de Caracteres")
 
-st.write('A veces, es dificil leer las fotos para encontrar pistas. '
-         ' Este es un piloto de reconocimiento óptico de caracteres que '
-         ' nuesto Spidey developer (Ganke) diseñó. '
-        )
+img_file_buffer = st.camera_input("Toma una Foto")
 
-# Subheader de la cámara en azul
-st.markdown("<h3 style='color: blue;'>Pongámoslo a prueba: toma una foto ;)</h3>", unsafe_allow_html=True)
-img_file_buffer = st.camera_input("")
-
-# Sidebar con header en azul
 with st.sidebar:
-    st.markdown("<h3 style='color: blue;'>Opciones</h3>", unsafe_allow_html=True)
     filtro = st.radio("Aplicar Filtro", ('Con Filtro', 'Sin Filtro'))
 
 if img_file_buffer is not None:
-    # Leer imagen del buffer
     bytes_data = img_file_buffer.getvalue()
     cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
 
@@ -44,11 +33,26 @@ if img_file_buffer is not None:
         cv2_img = cv2.bitwise_not(cv2_img)
 
     img_rgb = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
-    text = pytesseract.image_to_string(img_rgb)
+    st.image(img_rgb, caption="Imagen procesada", use_column_width=True)
 
-    # Mostrar resultado
-    st.markdown("<h3 style='color: blue;'>Texto Detectado</h3>", unsafe_allow_html=True)
+    text = pytesseract.image_to_string(img_rgb)
+    st.subheader("Texto detectado:")
     st.write(text)
+
+    if text.strip() != "":
+        tts = gTTS(text, lang='es')
+        audio_path = "audio_temp.mp3"
+        tts.save(audio_path)
+
+        st.subheader("Reproducir audio:")
+        audio_file = open(audio_path, "rb")
+        audio_bytes = audio_file.read()
+        st.audio(audio_bytes, format="audio/mp3")
+
+        audio_file.close()
+        os.remove(audio_path)
+    else:
+        st.warning("No se detectó texto en la imagen.")
 
 
     
